@@ -24,11 +24,11 @@ The script accepts the following parameters:
 Add these lines (with modified displayToScale) to your Command Preparations in General section of Sunshine:
 #### Do Command
 ```powershell
-powershell.exe -executionpolicy bypass -file "D:\Projekty\SunshineAutoresolution\main.ps1" -restore:$false -changeScaling:$true -displayToScale:1
+powershell.exe -executionpolicy bypass -file "<PathToTheScirptFolder>\main.ps1" -restore:$false -changeScaling:$true -displayToScale:1
 ```
 #### Undo Command
 ```powershell
-powershell.exe -executionpolicy bypass -file "D:\Projekty\SunshineAutoresolution\main.ps1" -restore:$false -changeScaling:$true -displayToScale:1
+powershell.exe -executionpolicy bypass -file "<PathToTheScirptFolder>\main.ps1" -restore:$false -changeScaling:$true -displayToScale:1
 ```
 
 ## Configuration
