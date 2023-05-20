@@ -485,9 +485,6 @@ if ($restore) {
     }
     exit
 }
-powershell Start-Process -FilePath "powershell" -ArgumentList -File "./SetResolution.ps1"" -restore" -Verb RunAs
-
-
 # else:
 # Done (thank god)
 # 1. Get the current resolution of the display
