@@ -12,6 +12,7 @@ Before using this script, make sure you have the following:
 
 - [Sunshine](https://github.com/LizardByte/Sunshine) installed on your system.
 - The `setdpi.exe` tool. You can download it from [here](https://github.com/imniko/SetDPI/releases).
+- A display that can display the resolution of your client (you add custom resolutions in both AMD and Nvidia settings app)
 
 ## Usage
 
