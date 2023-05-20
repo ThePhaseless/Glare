@@ -14,6 +14,9 @@ Before using this script, make sure you have the following:
 - The `setdpi.exe` tool. You can download it from [here](https://github.com/imniko/SetDPI/releases).
 - A display that can display the resolution of your client (you add custom resolutions in both AMD and Nvidia settings app)
 
+## Note
+The installation process for this script will be simplified once I do the installer like OG script.
+
 ## Usage
 
 The script accepts the following parameters:
