@@ -19,12 +19,16 @@ The script accepts the following parameters:
 
 - `restore` (mandatory): Set this to `$true` if you want to restore the original resolution when ending the streaming session.
 - `changeScaling` (optional): Set this to `$true` if you want to change the display scaling mode. Default is `$true`.
-- `displayToScale` (optional): Specify the display index to change the scaling mode. Default is `1`.
+- `displayToScale` (optional): Specify the display index to change the scaling mode. This is the number that windows assignes a display to in display settings. Default is `1`.
 
-Example usage:
-
+Add these lines (with modified displayToScale) to your Command Preparations in General section of Sunshine:
+#### Do Command
 ```powershell
-.\game-streaming-resolution.ps1 -restore $false -changeScaling $true -displayToScale 1
+powershell.exe -executionpolicy bypass -file "D:\Projekty\SunshineAutoresolution\main.ps1" -restore:$false -changeScaling:$true -displayToScale:1
+```
+#### Undo Command
+```powershell
+powershell.exe -executionpolicy bypass -file "D:\Projekty\SunshineAutoresolution\main.ps1" -restore:$false -changeScaling:$true -displayToScale:1
 ```
 
 ## Configuration
