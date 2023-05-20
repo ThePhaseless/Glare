@@ -39,7 +39,7 @@ powershell.exe -executionpolicy bypass -file "<PathToTheScirptFolder>\main.ps1" 
 
 The script assumes that the Sunshine log file is located at `C:/Windows/Temp/sunshine.log`. If your log file is in a different location, modify the `$sunshineLogFilePath` variable in the script accordingly.
 
-The script also requires an `overrides.txt` file for defining custom resolution and scaling settings. Each line in the file should follow the format `original_widthxoriginal_heightxoriginal_refresh_rate=new_widthxnew_heightxnew_refresh_rate[=scaling]`. The `scaling` parameter is optional. An example line in the `overrides.txt` file would be `1920x1080x60=1280x720x60=125`.
+The script can also use an `overrides.txt` file in the script folder for defining custom resolution and scaling settings. Each line in the file should follow the format `original_widthxoriginal_heightxoriginal_refresh_rate=new_widthxnew_heightxnew_refresh_rate[=scaling]`. The `scaling` parameter is optional. An example line in the `overrides.txt` file would be `1920x1080x60=1280x720x60=125`.
 
 ## Customization
 
