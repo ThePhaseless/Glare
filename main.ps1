@@ -18,7 +18,7 @@ $sunshineLogFilePath = "C:/Windows/Temp/sunshine.log"
 # if there isn't, stop script and print a message
 if ($changeScaling) {
     $setdpi = $PSScriptRoot + "/setdpi.exe"
-    if ($setdpi.Count -eq 0) {
+    if ((Test-Path $setdpi -PathType Leaf) -ne $true) {
         Write-Output "setdpi.exe not found in current directory. Please download it from https://github.com/imniko/SetDPI/releases"
         exit
     }
@@ -143,88 +143,6 @@ function Get-ClientResolution {
     return $return
 }
 
-function Get-OverrideResolution {
-    param (
-        [Parameter(Mandatory = $true)]
-        [Resolution]
-        $Resolution
-    )
-
-    $return = $null
-
-    $lines = Get-Content "overrides.txt"
-    $lines = $lines | Select-String -Pattern "^[^#]"
-
-    if ($lines.Count -eq 0) {
-        return $Resolution
-    }
-
-    foreach ($line in $lines) {
-        $line = $line.ToString()
-        $line = $line.Split("=")
-
-        $left = $line[0]
-        $right = $line[1]
-
-        $left = $left.Split("x")
-        $right = $right.Split("x")
-
-        $left_width = [int]$left[0]
-        $left_height = [int]$left[1]
-        $left_refresh_rate = [int]$left[2]
-
-        $right_width = [int]$right[0]
-        $right_height = [int]$right[1]
-        $right_refresh_rate = [int]$right[2]
-
-        if ($left_width -eq $Resolution.Width -and $left_height -eq $Resolution.Height -and $left_refresh_rate -eq $Resolution.RefreshRate) {
-            $return = New-Object Resolution(0, 0, 0, 0)
-            $return.Width = $right_width
-            $return.Height = $right_height
-            $return.RefreshRate = $right_refresh_rate
-
-            if ($line.Count -eq 3) {
-                $return.Scaling = [int]$line[2]
-            }
-            else {
-                $return.Scaling = 0
-            }
-            break
-        }
-    }
-
-    if ($null -eq $return) {
-        return $Resolution
-    }
-
-    return $return
-}
-
-function Get-CurrentDisplay {
-    $return = $null
-
-    $lines = Get-Content "C:/Windows/Temp/sunshine.log"
-    $lines = $lines | Select-String -Pattern "Output Name"
-    # reverse the array so we can get the last line
-    $lines = $lines | Select-Object -Index ($lines.Count - 1)
-    if ($lines.Count -eq 0) {
-        throw "Could not find display name in C:/Windows/Temp/sunshine.log"
-    }
-
-    foreach ($line in $lines) {
-        $line = $line.ToString()
-        $line = $line.Split(']')[1].Split(":")
-        $return = $line[3].Trim()
-        break
-    }
-
-    if ($null -eq $return) {
-        throw "Could not find display name in C:/Windows/Temp/sunshine.log"
-    }
-
-    return $return
-}
-
 function Set-Scaling {
     param (
         [Parameter(Mandatory = $true)]
@@ -244,7 +162,7 @@ function Set-Scaling {
         Write-Host "Setting scaling for display $DisplayIndex to $Scaling"
     }
 
-    & "./SetDPI.exe" $Scaling $DisplayIndex 
+    & $PSScriptRoot"\SetDPI.exe" $Scaling $DisplayIndex 
 }
 
 function Get-Scaling {
@@ -254,7 +172,7 @@ function Get-Scaling {
         $DisplayIndex
     )
 
-    $output = & "./SetDPI.exe" get $DisplayIndex
+    $output = & $PSScriptRoot"\SetDPI.exe" get $DisplayIndex
     $output = $output.Split(":")[1].Trim()
     return [int]$output
 }
@@ -268,7 +186,7 @@ function Get-OverrideResolution {
 
     $return = $null
 
-    $lines = Get-Content "overrides.txt"
+    $lines = Get-Content $PSScriptRoot"\overrides.txt"
     $lines = $lines | Select-String -Pattern "^[^#]"
 
     if ($lines.Count -eq 0) {
@@ -476,7 +394,7 @@ catch {
 # 3. Set the scaling to the original scaling if applicable
 
 if ($restore) {
-    $originalResolution = Get-ResolutionFromFile -FilePath "./originalResolution.xml"
+    $originalResolution = Get-ResolutionFromFile -FilePath $PSScriptRoot"\originalResolution.xml"
     # Serialize the resolution
     $originalResolution = New-Object Resolution($originalResolution.Width, $originalResolution.Height, $originalResolution.RefreshRate, $originalResolution.Scaling)
     Set-ScreenResolution -DeviceName ($currentDisplay) -Resolution $originalResolution
@@ -506,7 +424,7 @@ if ($changeScaling -ne 0) {
     $originalResolution.scaling = Get-Scaling -DisplayIndex $displayToScale
 }
 # 2. Save the current resolution to a file to be restored later (hopefully)
-Save-ResolutionToFile -Resolution $originalResolution -FilePath "./originalResolution.xml"
+Save-ResolutionToFile -Resolution $originalResolution -FilePath $PSScriptRoot"\originalResolution.xml"
 
 # 3. Get the client resolution from log file
 # 4. Override resolution if aplicable
