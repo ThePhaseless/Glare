@@ -140,6 +140,7 @@ function Get-ClientResolution {
         throw "Could not find resolution in C:/Windows/Temp/sunshine.log"
     }
 
+    Write-Host "Found client resolution: $($return.Width)x$($return.Height)@$($return.RefreshRate)Hz"
     return $return
 }
 
@@ -231,6 +232,10 @@ function Get-OverrideResolution {
         return $Resolution
     }
 
+    Write-Host "Overriding resolution: $($Resolution.Width)x$($Resolution.Height)@$($Resolution.RefreshRate)Hz -> $($return.Width)x$($return.Height)@$($return.RefreshRate)Hz"
+    if ($return.Scaling -ne 0) {
+        Write-Host "Scaling: $($return.Scaling)"
+    }
     return $return
 }
 
@@ -423,6 +428,8 @@ $originalResolution = Get-CurrentDisplaySettings -DeviceID (Get-DisplayDeviceIDF
 if ($changeScaling -ne 0) {
     $originalResolution.scaling = Get-Scaling -DisplayIndex $displayToScale
 }
+Write-Host "Current resolution: $($originalResolution.Width)x$($originalResolution.Height)@$($originalResolution.RefreshRate)Hz"
+Write-Host "Current scaling: $($originalResolution.scaling)"
 # 2. Save the current resolution to a file to be restored later (hopefully)
 Save-ResolutionToFile -Resolution $originalResolution -FilePath $PSScriptRoot"\originalResolution.xml"
 
@@ -435,5 +442,5 @@ Write-Host "Changing resolution to $clientResolution..."
 Set-ScreenResolution -DeviceName $currentDisplay -Resolution $clientResolution
 
 if ($changeScaling -and $clientResolution.scaling -ne $originalResolution.scaling) {
-    Set-Scaling -DisplayIndex $displayToScale -Scaling $Resolution.Scaling
+    Set-Scaling -DisplayIndex $displayToScale -Scaling $clientResolution.Scaling
 }
