@@ -12,7 +12,7 @@ param(
 )
 
 # change to your sunshine log file path if other than default
-$sunshineLogFilePath = "C:\Windows\Temp\sunshine.log"
+$sunshineLogFilePath = "$env:WINDIR\Temp\sunshine.log"
 
 # if scaling is enabled check if there's a setdpi.exe in the current directory
 # if there isn't, stop script and print a message
@@ -118,19 +118,25 @@ function Get-ClientResolution {
     $return = $null
 
     $return = New-Object Resolution(0, 0, 0, 0)
-    Get-Content $file -ReadCount 1000 | ForEach-Object {
-        foreach ($line in $_.Reverse()) {
+    $lines = Get-Content -Path $LogFilePath -ReadCount 1000
+    [array]::Reverse($lines)  # Reverse the array to start from the end
+    foreach ($chunk in $lines) {
+        $reversedLines = $chunk | Select-Object -Last 1000
+        [array]::Reverse($reversedLines)
+
+        $reversedLines | ForEach-Object {
+            $line = $_
             # Check if the line contains the desired pattern
             if ($line -match 'Debug: mode -- (\d+)x(\d+)x(\d+)') {
-                $return.Width = $matches[1]
-                $return.Height = $matches[2]
-                $return.RefreshRate = $matches[3]
-                break 2  # Exit both loops
+                $return.Width = [int]$Matches[1]
+                $return.Height = [int]$Matches[2]
+                $return.RefreshRate = [int]$Matches[3]
+                break  # Exit both loops
             }
         }
     }
 
-    if ($null -eq $return) {
+    if ($null -eq $return -or $return.Width -eq 0 -or $return.Height -eq 0 -or $return.RefreshRate -eq 0) {
         throw "Could not find resolution in $LogFilePath"
     }
 
