@@ -109,6 +109,49 @@ class Resolution {
     }
 }
 
+# Combine the two functions below into one
+function Get-InfoFromLog{
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]
+        $LogFilePath
+    )
+    $return = $null
+    $return.Resolution = New-Object Resolution(0, 0, 0, 0)
+    $return.DisplayName = ""
+
+    $lines = Get-Content -Path $LogFilePath -ReadCount 1000
+    [array]::Reverse($lines)  # Reverse the array to start from the end
+    foreach ($chunk in $lines) {
+        $reversedLines = $chunk | Select-Object -Last 1000
+        [array]::Reverse($reversedLines)
+
+        $reversedLines | ForEach-Object {
+            $line = $_
+            # Check if the line contains the desired pattern
+            if ($line -match 'Debug: mode -- (\d+)x(\d+)x(\d+)') {
+                $return.Resolution.Width = [int]$Matches[1]
+                $return.Resolution.Height = [int]$Matches[2]
+                $return.Resolution.RefreshRate = [int]$Matches[3]
+            }
+            if ($line -match 'Debug: display -- (.+)') {
+                $return.DisplayName = $Matches[1]
+                break
+            }
+        }
+    }
+
+    if ($return.Resolution.Width -eq 0 -or $return.Resolution.Height -eq 0 -or $return.Resolution.RefreshRate -eq 0) {
+        throw "Could not find resolution in $LogFilePath"
+    }
+
+    if ($return.DisplayName -eq "") {
+        throw "Could not find display name in $LogFilePath"
+    }
+
+    Write-Host "Found client resolution: $($return.Width)x$($return.Height)@$($return.RefreshRate)Hz"
+    return $return
+}
 function Get-ClientResolution {
     param(
         [Parameter(Mandatory = $true)]
@@ -127,12 +170,13 @@ function Get-ClientResolution {
         $reversedLines | ForEach-Object {
             $line = $_
             # Check if the line contains the desired pattern
+            if ()
             if ($line -match 'Debug: mode -- (\d+)x(\d+)x(\d+)') {
                 $return.Width = [int]$Matches[1]
                 $return.Height = [int]$Matches[2]
-                $return.RefreshRate = [int]$Matches[3]
-                break  # Exit both loops
+                $return.RefreshRate = [int]$Matches[3]  # Exit both loops
             }
+
         }
     }
 
@@ -385,7 +429,7 @@ Function Set-ScreenResolution {
 $currentDisplay = "\.\\DISPLAY1" # Setting not needed, but added to make the script more readable
 
 try {
-    $currentDisplay = Get-DisplayName
+    $currentDisplay = Get-InfoFromLog
 }
 catch {
     throw "Couldn't access Log file. Please run as administrator or add access for users to log file. Error: $_" 
@@ -434,6 +478,8 @@ Write-Host "Current scaling: $($originalResolution.scaling)"
 Save-ResolutionToFile -Resolution $originalResolution -FilePath $PSScriptRoot"\originalResolution.xml"
 
 # 3. Get the client resolution from log file
+
+function Get-InfoFromLog
 # 4. Override resolution if aplicable
 $clientResolution = Get-OverrideResolution -Resolution (Get-ClientResolution -LogFilePath $sunshineLogFilePath)
 
