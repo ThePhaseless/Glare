@@ -12,14 +12,14 @@ param(
 )
 
 # change to your sunshine log file path if other than default
-$sunshineLogFilePath = "C:/Windows/Temp/sunshine.log"
+$sunshineLogFilePath = "C:\Windows\Temp\sunshine.log"
 
 # if scaling is enabled check if there's a setdpi.exe in the current directory
 # if there isn't, stop script and print a message
 if ($changeScaling) {
-    $setdpi = $PSScriptRoot + "/setdpi.exe"
+    $setdpi = $PSScriptRoot + "\setdpi.exe"
     if ((Test-Path $setdpi -PathType Leaf) -ne $true) {
-        Write-Output "setdpi.exe not found in current directory. Please download it from https://github.com/imniko/SetDPI/releases"
+        Write-Output "setdpi.exe not found in $setdpi. Please download it from https://github.com/imniko/SetDPI/releases"
         exit
     }
 }
@@ -117,27 +117,21 @@ function Get-ClientResolution {
     )
     $return = $null
 
-    $lines = Get-Content $LogFilePath
-    $lines = $lines | Select-String -Pattern "Debug: mode --"
-
-    if ($lines.Count -eq 0) {
-        throw "Could not find resolution in C:/Windows/Temp/sunshine.log"
-    }
-
-    foreach ($line in $lines) {
-        $line = $line.ToString()
-        $line = $line.Split(" ")
-        $line = $line[4]
-
-        $return = New-Object Resolution(0, 0, 0, 0)
-        $return.Width = [int]$line.Split("x")[0]
-        $return.Height = [int]$line.Split("x")[1]
-        $return.RefreshRate = [int]$line.Split("x")[2]
-        break
+    $return = New-Object Resolution(0, 0, 0, 0)
+    Get-Content $file -ReadCount 1000 | ForEach-Object {
+        foreach ($line in $_.Reverse()) {
+            # Check if the line contains the desired pattern
+            if ($line -match 'Debug: mode -- (\d+)x(\d+)x(\d+)') {
+                $return.Width = $matches[1]
+                $return.Height = $matches[2]
+                $return.RefreshRate = $matches[3]
+                break 2  # Exit both loops
+            }
+        }
     }
 
     if ($null -eq $return) {
-        throw "Could not find resolution in C:/Windows/Temp/sunshine.log"
+        throw "Could not find resolution in $LogFilePath"
     }
 
     Write-Host "Found client resolution: $($return.Width)x$($return.Height)@$($return.RefreshRate)Hz"
