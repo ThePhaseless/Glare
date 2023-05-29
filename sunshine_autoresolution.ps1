@@ -8,7 +8,6 @@ param(
     [Parameter(Mandatory = $false)]
     [int]
     $displayToScale = 1
-    
 )
 
 # change to your sunshine log file path if other than default
