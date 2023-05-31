@@ -1,7 +1,7 @@
 param(
     [Parameter(Mandatory = $true)]
-    [bool]
-    $restore = $false,
+    [switch]
+    $restore,
     [Parameter(Mandatory = $false)]
     [bool]
     $changeScaling = $true,
