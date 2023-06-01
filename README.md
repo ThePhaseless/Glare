@@ -15,6 +15,7 @@ Before using this script, make sure you have the following:
 - A display that can display the resolution of your client (you can add custom resolutions in both AMD and Nvidia settings app)
 
 ## Note
+
 The installation process for this script will be simplified once I do the installer like OG script.
 
 ## Usage
@@ -26,11 +27,15 @@ The script accepts the following parameters:
 - `displayToScale` (optional): Specify the display index to change the scaling mode. This is the number that windows assignes a display to in display settings. Default is `1`.
 
 Add these lines (with modified displayToScale) to your Command Preparations in General section of Sunshine:
+
 #### Do Command
+
 ```powershell
 powershell.exe -executionpolicy bypass -file "<PathToTheScirptFolder>\main.ps1" -restore:$false -changeScaling:$true -displayToScale:1
 ```
+
 #### Undo Command
+
 ```powershell
 powershell.exe -executionpolicy bypass -file "<PathToTheScirptFolder>\main.ps1" -restore:$false -changeScaling:$true -displayToScale:1
 ```
@@ -39,7 +44,7 @@ powershell.exe -executionpolicy bypass -file "<PathToTheScirptFolder>\main.ps1" 
 
 The script assumes that the Sunshine log file is located at `C:/Windows/Temp/sunshine.log`. If your log file is in a different location, modify the `$sunshineLogFilePath` variable in the script accordingly.
 
-The script can also use an `overrides.txt` file in the script folder for defining custom resolution and scaling settings. Each line in the file should follow the format `original_widthxoriginal_heightxoriginal_refresh_rate=new_widthxnew_heightxnew_refresh_rate[=scaling]`. The `scaling` parameter is optional. An example line in the `overrides.txt` file would be `1920x1080x60=1280x720x60=125`.
+The script can also use an `overrides.txt` file in the script folder for defining custom resolution and scaling settings. Each line in the file should follow the format `original_widthxoriginal_heightxoriginal_refresh_rate=new_widthxnew_heightxnew_refresh_rate[=scaling]`. `scaling` parameter is optional. An example line in the `overrides.txt` file would be `1920x1080x60=1280x720x60=125`.
 
 ## Customization
 

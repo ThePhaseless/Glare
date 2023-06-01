@@ -1,1 +1,1 @@
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "./install.ps1" -remove RunAs
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0/install.ps1 -remove"

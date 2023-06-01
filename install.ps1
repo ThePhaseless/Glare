@@ -1,27 +1,41 @@
-# named parameters: -remove
 param (
     [switch]$remove
 )
-$sunshineConfigPath = "C:\Program Files\Sunshine\config\sunshine.conf"
-# $sunshineConfigPath = "$PSScriptRoot\sunshine.conf"
-$scriptPath = "$PSScriptRoot\sunshine_autoresolution.ps1"
-$scriptPath = $scriptPath.Replace("\", "\\")
 
-# Check if user is running as administrator 
-$currentUser = New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent())
+Write-Host "Remove mode: $remove"
 
-
-#if not, relaunch as administrator
-if ($currentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator) -eq $false) {
-    $arguments = "& '" + $myinvocation.mycommand.definition + "'"
-    Start-Process powershell -Verb runAs -ArgumentList $arguments
+# chcek if running as admin
+$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+Write-Host "Is admin: $isAdmin"
+if (!$isAdmin) {  
+    Write-Host "Please run this script as administrator!"
+    Read-Host -Prompt "Press Enter to exit"
     exit
 }
 
+Write-Host "Starting script..."
+Set-Location $PSScriptRoot
+Write-Host "Current directory: $PWD"
+
+$sunshineConfigPath = "C:\Program Files\Sunshine\config\sunshine.conf"
+#$sunshineConfigPath = "$PSScriptRoot\sunshine.conf"
+$scriptPath = "$PSScriptRoot\sunshine_autoresolution.ps1"
+$scriptPath = $scriptPath.Replace("\", "\\")
+
 $sunshineConfig = Get-Content $sunshineConfigPath
+
+if ($null -eq $sunshineConfig) {
+    Write-Host "sunshine.conf not found in $sunshineConfigPath. Please install Sunshine first!"
+    Read-Host -Prompt "Press Enter to exit"
+    exit
+}
 
 if (!$remove) {
     $changeScaling = (Read-Host "Do you want to change the scaling of your display? (y/N)") -eq "y"
+    if ((Test-Path "./setdpi.exe" -PathType Leaf) -ne $true -and $changeScaling) {
+        Write-Output "setdpi.exe not found in $setdpi. Please download it from https://github.com/imniko/SetDPI/releases"
+    }
+
     # check if user is using multiple monitors
     $monitors = Get-WmiObject -Namespace root\wmi -Class WmiMonitorBasicDisplayParams
     $monitorCount = $monitors.Count
@@ -30,14 +44,18 @@ if (!$remove) {
     if ($monitorCount -gt 1) {
         Write-Host "If you plan not to stream the default display, set it in sunshine settings!"
         if ($changeScaling) {
-            $monitorNumber = Read-Host "Which monitor do you want to scale? (number of display from windows settings)"
+            Write-Host "Multiple displays detected"
+            $monitorNumber = Read-Host "Which display do you want to scale on stream? (use setdpi.exe to get the display number)"
         }
     }
     else {
         $monitorNumber = 1
     }
 
-    $commandScript = "powershell.exe -NoProfile -ExecutionPolicy Bypass -File `\\\`"$scriptPath`\\\`" -monitorNumber $monitorNumber -changeScaling $changeScaling"
+    $commandScript = "powershell.exe -NoProfile -ExecutionPolicy Bypass -File `\`"$scriptPath`\`""
+    if ($changeScaling) {
+        $commandScript += " -changeScaling -displayToScale $monitorNumber"
+    }
     $prepareCmd = "`"do`": `"$commandScript`", `"undo`": `"$commandScript -restore`",`"elevated`":`"true`"}"
 }
 

@@ -1,14 +1,16 @@
 param(
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $false)]
     [switch]
     $restore,
     [Parameter(Mandatory = $false)]
-    [bool]
-    $changeScaling = $true,
+    [switch]
+    $changeScaling,
     [Parameter(Mandatory = $false)]
     [int]
     $displayToScale = 1
 )
+
+Start-Transcript -Path $PSScriptRoot\sunshine_autoresolution.log
 
 # change to your sunshine log file path if other than default
 $sunshineLogFilePath = "$env:WINDIR\Temp\sunshine.log"
@@ -137,6 +139,7 @@ function Get-ClientResolution {
 
     if ($null -eq $return -or $return.Width -eq 0 -or $return.Height -eq 0 -or $return.RefreshRate -eq 0) {
         throw "Could not find resolution in $LogFilePath"
+        exit
     }
 
     Write-Host "Found client resolution: $($return.Width)x$($return.Height)@$($return.RefreshRate)Hz"
@@ -247,6 +250,7 @@ function Get-DisplayName {
     $lines = $lines | Select-Object -Index ($lines.Count - 1)
     if ($lines.Count -eq 0) {
         throw "Could not find display name in C:/Windows/Temp/sunshine.log"
+        exit
     }
 
     foreach ($line in $lines) {
@@ -258,6 +262,7 @@ function Get-DisplayName {
 
     if ($null -eq $return) {
         throw "Could not find display name in C:/Windows/Temp/sunshine.log"
+        exit
     }
 
     return $return
@@ -286,6 +291,7 @@ function Get-DisplayDeviceIDFromDeviceName {
     }
     if ($null -eq $device) {
         throw "Could not find device with name $DeviceName"
+        exit
     }
     return $device.DeviceID
 }
@@ -311,6 +317,7 @@ function Get-CurrentDisplaySettings {
     }
     if ($null -eq $return) {
         throw "Could not find display with DeviceID $DeviceID"
+        exit
     }
     return $return
 }
@@ -375,19 +382,21 @@ Function Set-ScreenResolution {
     }
     elseif ($null -eq $result) {
         throw "Could not find compatible resolution."
+        exit
     }
     else {
         throw "Couldn't change resolution. Error code: $result"
+        exit
     }
 }
 
-$currentDisplay = "\.\\DISPLAY1" # Setting not needed, but added to make the script more readable
-
+$currentDisplay = $null
 try {
     $currentDisplay = Get-DisplayName
 }
 catch {
-    throw "Couldn't access Log file. Please run as administrator or add access for users to log file. Error: $_" 
+    $currentDisplay = "\\.\DISPLAY1" # Setting not needed, but added to make the script more readable
+    Write-Host "Couldn't access Log file. Please run as administrator or add access for users to log file. Error: $_" 
 }
 
 # 0. Check if restore parameter is set
@@ -402,7 +411,7 @@ if ($restore) {
     # Serialize the resolution
     $originalResolution = New-Object Resolution($originalResolution.Width, $originalResolution.Height, $originalResolution.RefreshRate, $originalResolution.Scaling)
     Set-ScreenResolution -DeviceName ($currentDisplay) -Resolution $originalResolution
-    if ($changeScaling -ne 0 && $originalResolution.scaling -ne (Get-Scaling -DisplayIndex $displayToScale)) {
+    if (!$changeScaling -and $originalResolution.scaling -ne (Get-Scaling -DisplayIndex $displayToScale)) {
         Set-Scaling -DisplayIndex $displayToScale -Scaling $originalResolution.scaling
     }
     exit

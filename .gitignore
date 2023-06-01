@@ -3,3 +3,4 @@ originalResolution.xml
 /.vscode
 SetDpi.exe
 overrides.txt
+*.log
