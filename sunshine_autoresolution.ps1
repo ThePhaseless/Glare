@@ -174,7 +174,7 @@ function Get-Scaling {
         [string]
         $DisplayIndex
     )
-
+  
     $output = & $PSScriptRoot"\SetDPI.exe" get $DisplayIndex
     $output = $output.Split(":")[1].Trim()
     return [int]$output
@@ -411,7 +411,7 @@ if ($restore) {
     # Serialize the resolution
     $originalResolution = New-Object Resolution($originalResolution.Width, $originalResolution.Height, $originalResolution.RefreshRate, $originalResolution.Scaling)
     Set-ScreenResolution -DeviceName ($currentDisplay) -Resolution $originalResolution
-    if (!$changeScaling -and $originalResolution.scaling -ne (Get-Scaling -DisplayIndex $displayToScale)) {
+    if ($changeScaling -and $originalResolution.scaling -ne (Get-Scaling -DisplayIndex $displayToScale)) {
         Set-Scaling -DisplayIndex $displayToScale -Scaling $originalResolution.scaling
     }
     exit
@@ -433,7 +433,7 @@ if ($restore) {
 # 1. Get the current resolution of the display
 $originalResolution = Get-CurrentDisplaySettings -DeviceID (Get-DisplayDeviceIDFromDeviceName -DeviceName ($currentDisplay))
 # TODO: Find a better way to find screen indexes
-if ($changeScaling -ne 0) {
+if ($changeScaling) {
     $originalResolution.scaling = Get-Scaling -DisplayIndex $displayToScale
 }
 Write-Host "Current resolution: $($originalResolution.Width)x$($originalResolution.Height)@$($originalResolution.RefreshRate)Hz"
