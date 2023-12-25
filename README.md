@@ -1,7 +1,7 @@
 ## Status: archived
 This project is archived and no longer maintained. From now, I will use, support and recommend Nonarys [ResolutionAutomation](https://github.com/Nonary/ResolutionAutomation/tree/main) script as it is maintained more actively. I will keep this repository for historical purposes.
 
-# Sunshine Autoresolution
+# Glare
 
 This script is designed to automate the process of changing display resolution when starting and ending game streaming sessions using [Sunshine](https://github.com/LizardByte/Sunshine). It allows you to switch to a specific resolution and scaling mode when starting the streaming session and restore the original resolution when ending the session.
 
